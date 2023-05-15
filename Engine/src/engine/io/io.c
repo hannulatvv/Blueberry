@@ -4,11 +4,11 @@
 
 #include "../types.h"
 #include "../util.h"
-#include "io.h"
+#include "../io.h"
 
 // 20MiB
 #define IO_READ_CHUNK_SIZE 2097152
-#define IO_READ_ERROR_GENERAL "Error reading the file: %s. errno: %d\n"
+#define IO_READ_ERROR_GENERAL "Error reading the file: %s errno: %d\n"
 #define IO_READ_ERROR_MEMORY "Not enough free memory to read the file: %s\n"
 
 File io_file_read(const char *path)
@@ -16,7 +16,7 @@ File io_file_read(const char *path)
     File file = {.is_valid = false};
 
     FILE *fp = fopen(path, "rb");
-    if(ferror(fp)){
+    if(!fp || ferror(fp)){
         ERROR_RETURN(file, IO_READ_ERROR_GENERAL, path, errno);
     }
 
@@ -41,38 +41,48 @@ File io_file_read(const char *path)
                 ERROR_RETURN(file, IO_READ_ERROR_MEMORY, path);
             }
             data = tmp;
-
-            n = fread(data + used, 1, IO_READ_CHUNK_SIZE, fp);
-            if(n == 0){
-                break;
-            }
-
-            used += n;
         }
+        n = fread(data + used, 1, IO_READ_CHUNK_SIZE, fp);
 
-        if(ferror(fp)){
-            free(data);
-            ERROR_RETURN(file, IO_READ_ERROR_GENERAL, path, errno);
-        }
+        if(n == 0)
+            break;
 
-        tmp = realloc(data, used + 1);
-        if(!tmp){
-            free(data);
-            ERROR_RETURN(file, IO_READ_ERROR_MEMORY, path);
-        }
-
-        data = tmp;
-        data[used] = 0;
-
-        file.data = data;
-        file.len = used;
-        file.is_valid = true;
-
-        return file;
+        used += n;
     }
+
+    if(ferror(fp)){
+        free(data);
+        ERROR_RETURN(file, IO_READ_ERROR_GENERAL, path, errno);
+    }
+
+    tmp = realloc(data, used + 1);
+    if(!tmp){
+        free(data);
+        ERROR_RETURN(file, IO_READ_ERROR_MEMORY, path);
+    }
+    data = tmp;
+    data[used] = 0;
+
+    file.data = data;
+    file.len = used;
+    file.is_valid = true;
+
+    return file;
 }
 
 int io_file_write(void *buffer, size_t size, const char *path)
 {
+    FILE *fp = fopen(path, "wb");
+    if(!fp || ferror(fp))
+        ERROR_RETURN(1, "Cannot write the file: %s\n", path);
+    
+    size_t chunks_written = fwrite(buffer, size, 1, fp);
 
+    fclose(fp);
+
+    if(chunks_written != 1){
+        ERROR_RETURN(1, "Write error Expected 1 chunk, got %zu\n", chunks_written);
+    }
+
+    return 0;
 }

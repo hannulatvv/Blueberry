@@ -2,7 +2,7 @@
 #include <SDL2/SDL.h>
 #include "../util.h"
 #include "../global.h"
-#include "render.h"
+#include "../render.h"
 #include "render_internal.h"
 
 SDL_Window *render_init_window(u32 width, u32 height){
