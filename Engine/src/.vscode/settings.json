@@ -3,6 +3,7 @@
         "types.h": "c",
         "render.h": "c",
         "global.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "array_list.h": "c"
     }
 }

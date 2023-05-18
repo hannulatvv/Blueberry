@@ -6,10 +6,10 @@
 
 static const char *CONFIG_DEFAULT = 
     "[controls]\n"
-    "left = A\n"
-    "right = D\n"
-    "up = W\n"
-    "down = S\n"
+    "left = Left\n"
+    "right = Right\n"
+    "up = Up\n"
+    "down = Down\n"
     "escape = Escape\n"
     "\n";
 
@@ -22,7 +22,7 @@ static char *config_get_value(const char *config_buffer, const char *value){
     }
 
     size_t len = strlen(line);
-    char* end = line + len;
+    char *end = line + len;
 
     char *curr = line;
     char *tmp_ptr = &tmp_buffer[0];
@@ -44,12 +44,12 @@ static char *config_get_value(const char *config_buffer, const char *value){
     return tmp_buffer;
 }
 
-static int load_controls(const char *config_buffer)
+static void load_controls(const char *config_buffer)
 {
-    config_key_bind(INPUT_KEY_LEFT, config_get_value(config_buffer, "left"));
-    config_key_bind(INPUT_KEY_RIGHT, config_get_value(config_buffer, "right"));
     config_key_bind(INPUT_KEY_UP, config_get_value(config_buffer, "up"));
     config_key_bind(INPUT_KEY_DOWN, config_get_value(config_buffer, "down"));
+    config_key_bind(INPUT_KEY_LEFT, config_get_value(config_buffer, "left"));
+    config_key_bind(INPUT_KEY_RIGHT, config_get_value(config_buffer, "right"));
     config_key_bind(INPUT_KEY_ESCAPE, config_get_value(config_buffer, "escape"));
 }
 
@@ -80,7 +80,7 @@ void config_init(void){
 void config_key_bind(Input_key key, const char *key_name){
     SDL_Scancode scan_code = SDL_GetScancodeFromName(key_name);
     if(scan_code == SDL_SCANCODE_UNKNOWN){
-        ERROR_RETURN("Invalid scan code when binding a key: %s\n", key_name);
+        ERROR_RETURN(,"Invalid scan code when binding a key: %s\n", key_name);
     }
 
     global.config.keybinds[key] = scan_code;
